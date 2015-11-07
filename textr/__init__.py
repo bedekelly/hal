@@ -1,3 +1,3 @@
 from flask import Flask
-app = Flask(app)
-import views
+app = Flask(__name__)
+from . import views
