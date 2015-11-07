@@ -91,7 +91,6 @@ def translate(orig_text, request):
     url = ("http://mymemory.translated.net/api/get?q="
            "{}&langpair=en|{}".format(phrase, language[:2]))
     
-
     
 handlers = [(is_definition, definition), (is_synonym, synonyms),
             (is_translate, translate)]
