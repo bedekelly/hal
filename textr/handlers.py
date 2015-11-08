@@ -174,7 +174,8 @@ def summary(orig_text, topic):
             return "Sorry, couldn't find anything about \""+topic+"\""
     else:
         return s
-                
+
+        
 pats = ["([£$])(\d+(?:\.\d+)?) (?:(?:to|in) )?(\w+)",
         "(\d+(?:\.\d+)?) ?(\w+) (?:(?:to|in) )?(\w+)"]
 pats = list(map(re.compile, pats))
@@ -208,9 +209,38 @@ def currency(orig_text, groups):
         return ("Sorry, couldn't convert! Try using the 3-letter code"
                 " for both your currencies, like "
                 "'convert 8 usd to gbp'.")
+
+nearhere_pats_ = ("best (.*) near (.*)",
+                  "best (.*) in (.*)",
+                  "best (.*) around (.*)",
+                  "good (.*) near (.*)",
+                  "good (.*) in (.*)",
+                  "good (.*) around (.*)",
+                  "where are some (.*) near (.*)",
+                  "where are some (.*) in (.*)",
+                  "where are some (.*) around (.*)",
+                  "locate (.*) near (.*)",
+                  "locate (.*) in (.*)",
+                  "locate (.*) around (.*)",
+                  "(.*) near (.*)",
+                  "(.*) in (.*)",
+                  "(.*) around (.*)")
+nearhere_pats = list(map(re.compile, nearwhere_pats_))
+def is_nearhere(text):
+    for s in nearhere_pats:
+        r = s.search(text)
+        if r:
+            return True, r.groups()
+    else:
+        return False, text
         
+
+def nearhere(orig_text, data):
+    print(data)
+    return str(data)
+
 
 # Store a list of (test_function, get_response_function) pairs.    
 handlers = [(is_definition, definition), (is_synonym, synonyms),
             (is_translate, translate), (is_summary, summary),
-            (is_currency, currency)]
+            (is_currency, currency), (is_nearhere, nearhere)]
