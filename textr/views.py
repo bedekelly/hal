@@ -7,5 +7,3 @@ from .generator import gen_response
 def recieved():
     message = get_last_message()
     return twiml_response(gen_response(message))
-
-    
