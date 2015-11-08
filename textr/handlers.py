@@ -7,6 +7,7 @@ import re
 import csv
 import wikipedia
 import warnings
+from operator import itemgetter
 from urllib.parse import quote_plus
 
 PLACES_API_KEY = "AIzaSyDtwJ6pjQETAwVQfbiCgobjTtcZeHcRqUU"
@@ -237,8 +238,33 @@ def is_nearhere(text):
         
 
 def nearhere(orig_text, data):
-    print(data)
-    return str(data)
+    searchq = ' in '.join(data)
+
+    url = ("https://maps.googleapis.com/maps/api/place/textsearch/json?"
+           "query={}&key={}&language=en-GB".format(
+               searchq, PLACES_API_KEY
+           ))
+    
+    t = requests.get(url).text
+    d = json.loads(t)
+    results = d["results"]
+
+    def addr(a):
+        "Format an address, i18n etc. (tm)"
+        address = a.split(",")
+        if "japan" in address[0].lower():
+            return ', '.join(address[-3:-1])
+        else:
+            return ', '.join(address[:2])
+    
+    get_rating = lambda r: str(r.get("rating", "-"))
+    results = sorted(results, key=get_rating)
+    top5 = [(r["name"], r.get("rating", "-"),
+             addr(r["formatted_address"]))
+            for r in reversed(results[:5])]
+
+    print('\n\n'.join(map(str, top5)))
+    return "test"
 
 
 # Store a list of (test_function, get_response_function) pairs.    
