@@ -225,8 +225,9 @@ nearhere_pats_ = ("best (.*) near (.*)",
                   "(.*) near (.*)",
                   "(.*) in (.*)",
                   "(.*) around (.*)")
-nearhere_pats = list(map(re.compile, nearwhere_pats_))
+nearhere_pats = list(map(re.compile, nearhere_pats_))
 def is_nearhere(text):
+    text = text.lower().strip()
     for s in nearhere_pats:
         r = s.search(text)
         if r:
