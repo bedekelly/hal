@@ -7,7 +7,7 @@ import re
 import csv
 import wikipedia
 import warnings
-from api_keys import X_MASHAPE_KEY, PLACES_API_KEY
+from .api_keys import X_MASHAPE_KEY, PLACES_API_KEY
 from operator import itemgetter
 from urllib.parse import quote_plus
 
