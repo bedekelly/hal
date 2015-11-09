@@ -10,7 +10,6 @@ import warnings
 from operator import itemgetter
 from urllib.parse import quote_plus
 
-PLACES_API_KEY = "AIzaSyDtwJ6pjQETAwVQfbiCgobjTtcZeHcRqUU"
 EMAIL = "bedekelly97@gmail.com"
 warnings.simplefilter("ignore")
 
