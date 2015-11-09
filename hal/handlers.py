@@ -223,7 +223,7 @@ nearhere_pats_ = ("best (.*) near (.*)",
                   "(.*) near (.*)",
                   "(.*) in (.*)",
                   "(.*) around (.*)")
-nearhere_pats = list(map(re.compile, nearhere_pats_))
+nearhere_pats = [re.compile(p) for p in nearhere_pats_]
 def is_nearhere(text):
     """Test if the message wants to know about things in a location."""
     text = text.lower().strip()
@@ -248,21 +248,22 @@ def nearhere(orig_text, data):
     results = d["results"]
 
     def addr(a):
-        "Format an address, i18n etc. (tm)"
+        """Get the important bits from an address."""
         address = a.split(",")
         if "japan" in address[0].lower():
             return ','.join(address[-3:-1])
         else:
             return ','.join(address[:2])
-    
-    get_rating = lambda r: str(r.get("rating", "-"))
-    results = sorted(results, key=get_rating)
-    top3 = [(r["name"], get_rating(r), addr(r["formatted_address"]))
-            for r in reversed(results[:3])]
 
+    # Grab the top 3 places by rating.
+    get_rating = lambda r: str(r.get("rating", "-"))
+    results = sorted(results, key=get_rating, reverse=True)
+    top3 = [(r["name"], get_rating(r), addr(r["formatted_address"]))
+            for r in results[:3]]
+
+    # Format the address sanely in our response.
     def format_triple(addr):
         return "{}:\n  Rating: {}\n  Address: {}\n".format(*addr)
-
     u = orig_text.title() + ":\n" + '\n\n'.join(map(format_triple, top3))
     return u
 
