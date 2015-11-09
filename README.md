@@ -8,7 +8,7 @@ Ever wanted to Google who Alan Turing was, but you can't because your internet b
 
 Hooking into Google Places, Wikipedia, WordsAPI, Google's currency conversion tools and much more coming soon, Hal can get you out of a scrape.
 
-Want to know the best cafés around for a nice quiet drink? No problem - text it `best cafés in Cardiff` (or wherever you happen to be) and it'll send you back something that looks like this:
+Want to know the best places around for a cracking meal? No problem - text it `best restaurants in Cardiff` (or wherever you happen to be) and it'll send you back something that looks like this:
 
 <img src="https://raw.github.com/bedekelly/hal/master/img/cafes.png" width=250 alt="Best cafes in Cardiff">
 
