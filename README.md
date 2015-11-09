@@ -14,14 +14,14 @@ Want to know the best cafés around for a nice quiet drink? No problem - text it
 
 Writing the latest spy thriller, but you don't want to keep using the word 'suddenly'?
 
-![other words for "suddenly"](https://raw.github.com/bedekelly/hal/master/images/suddenly.png)
+![other words for "suddenly"](https://raw.githubusercontent.com/bedekelly/hal/master/images/suddenly.png)
 
 Can't for the life of you remember what Charles Darwin did?
 
-![Tell me about Charles Darwin](https://raw.github.com/bedekelly/hal/master/images/darwin.png)
+![Tell me about Charles Darwin](https://raw.githubusercontent.com/bedekelly/hal/master/images/darwin.png)
 
 Or want to buy something snazzy in Tokyo?
 
-![Translate clothes store to Japanese](https://raw.github.com/bedekelly/hal/master/images/japanese.png)
+![Translate clothes store to Japanese](https://raw.githubusercontent.com/bedekelly/hal/master/images/japanese.png)
 
 Hal's getting smarter every day, so watch this space for more.
