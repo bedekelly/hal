@@ -77,8 +77,7 @@ def definition(orig_text, word):
     if word == "recursion":
         return "recursion, noun: see recursion(1)"  # ;)
     headers = {
-        "X-Mashape-Key":
-          "5Cbc4Mg5HWmshLg3MzgnmPAVdldfp1Slg68jsnDSr7RqfbYiS9",
+        "X-Mashape-Key": X_MASHAPE_KEY,
         "Accept": "application/json"
     }
     url = "https://wordsapiv1.p.mashape.com/words/{}".format(word)
