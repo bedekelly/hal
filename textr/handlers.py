@@ -87,8 +87,12 @@ def definition(orig_text, word):
     try:
         results = data["results"]
     except Exception as e:
-        print(e)
-        return "Sorry could't define that word :("
+        try:
+            url = "https://wordsapiv1.p.mashape.com/words/{}".format(word[:-1])
+            data = json.loads(requests.get(url, headers=headers).text)
+            results = data["results"]
+        except Exception as e:
+            return "Sorry, couldn't define that word! :("
     first, *more, last = results
 
     resp = []
@@ -98,7 +102,7 @@ def definition(orig_text, word):
     return '\n'.join(resp)
 
 
-trans = re.compile("translate \"?(.+)\"? to (\w+)")
+trans = re.compile("translate \"?(.+?)\"? to (\w+)")
 def is_translate(text):
     """
     Test whether 'text' wants us to translate something to a language.
@@ -253,18 +257,21 @@ def nearhere(orig_text, data):
         "Format an address, i18n etc. (tm)"
         address = a.split(",")
         if "japan" in address[0].lower():
-            return ', '.join(address[-3:-1])
+            return ','.join(address[-3:-1])
         else:
-            return ', '.join(address[:2])
+            return ','.join(address[:2])
     
     get_rating = lambda r: str(r.get("rating", "-"))
     results = sorted(results, key=get_rating)
-    top5 = [(r["name"], r.get("rating", "-"),
+    top3 = [(r["name"], r.get("rating", "-"),
              addr(r["formatted_address"]))
-            for r in reversed(results[:5])]
+            for r in reversed(results[:3])]
 
-    print('\n\n'.join(map(str, top5)))
-    return "test"
+    def format_triple(addr):
+        return "{}:\n  Rating: {}\n  Address: {}\n".format(*addr)
+
+    u =orig_text.title() + ":\n" + '\n\n'.join(map(format_triple, top3))
+    return u
 
 
 # Store a list of (test_function, get_response_function) pairs.    
