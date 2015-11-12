@@ -115,7 +115,7 @@ def translate(orig_text, request):
     Translate the relevant parts of `request` from English to the
     specified language.
     """
-    phrase, language = [x.strip.lower() for x in (phrase, language)]
+    phrase, language = [x.strip().lower() for x in request]
     url = "http://mymemory.translated.net/api/get?q={}&langpair=en|{}&de={}"
     url = url.format(phrase, COUNTRY_CODES[language], EMAIL)
     data = json.loads(requests.get(url).text)
@@ -177,7 +177,7 @@ currency_pats_ = ["([£$])(\d+(?:\.\d+)?) (?:(?:to|in) )?(\w+)",
 currency_pats = [re.compile(p) for p in currency_pats_]
 def is_currency(text):
     text = text.strip().lower()
-    for p in pats:
+    for p in currency_pats:
         result = p.search(text)
         if result:
             return True, result.groups()
@@ -267,10 +267,22 @@ def nearhere(orig_text, data):
     u = orig_text.title() + ":\n" + '\n\n'.join(map(format_triple, top3))
     return u
 
+
+def is_special(text):
+    return basic_match(
+        text,
+        ["open the pod bay doors"])
+
+def special(orig, info):
+    if "open the pod bay doors" in orig.lower().strip():
+        return "I'm sorry Dave. I'm afraid I can't do that."
+    return ""
+
 # `handlers` is the big deal here. It's a list of (function, function) pairs,
 # where the first function tests whether a message falls into a particular
 # category and, if so, the second function handles that message type and 
-# returns the response we should send back.
+# returns they response we should send back.
 handlers = [(is_definition, definition), (is_synonym, synonyms),
             (is_translate, translate), (is_summary, summary),
-            (is_currency, currency), (is_nearhere, nearhere)]
+            (is_currency, currency), (is_nearhere, nearhere),
+            (is_special, special)]
