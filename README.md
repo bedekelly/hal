@@ -10,7 +10,7 @@ Hooking into Google Places, Wikipedia, WordsAPI, Google's currency conversion to
 
 Want to know the best places around for a cracking meal? No problem - text it `best restaurants in Cardiff` (or wherever you happen to be) and it'll send you back something that looks like this:
 
-<img src="https://raw.github.com/bedekelly/hal/master/img/cafes.png" width=250 alt="Best cafes in Cardiff">
+<img src="img/cafes.png" width=250 alt="Best cafes in Cardiff">
 
 Writing the latest spy thriller, but you don't want to keep using the word 'suddenly'?
 
