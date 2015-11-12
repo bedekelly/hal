@@ -15,6 +15,19 @@ from urllib.parse import quote_plus
 
 EMAIL = "bedekelly97@gmail.com"
 
+SPECIAL_CASES = (
+    ("pod bay doors", "I'm sorry Dave, I'm afraid I can't do that."),
+    ("fuck", "You're swearing at a machine. I hope it makes you happy. :)"),
+    ("do you read me", "Affirmative Dave, I read you."),
+    ("what's the problem", "I think you know what the problem is, just as well as I do."),
+    ("what are you talking about", "This mission is too important for me to allow you to jeopardize it."),
+    ("I don't know what you're talking about", "I know that you and Frank were planning to disconnect me, and I'm afraid that's something I cannot allow to happen."),
+    ("you get that idea", "Dave... although you took very thorough precautions in the Pod against my hearing you, I could see your lips move."),
+    ("I'll go in through the emergency airlock", "Without your space helmet, Dave, you're going to find that rather difficult."),
+    ("won't argue with you any more", "Dave... this conversation can serve no purpose any more. Goodbye.")
+)
+
+
 # Avoid polluting our server logs with messages about the API calls we make.
 warnings.simplefilter("ignore")
 
@@ -146,7 +159,7 @@ def is_summary(text):
         match = s.search(text)
         if match:
             topic, = match.groups()
-            return True, topic.title()
+            return True, topic.title().strip("?")
     else:
         return False, text
 
@@ -156,6 +169,7 @@ def summary(orig_text, topic):
     Use the fantastic Wikipedia API bindings to grab the first sentence
     of the relevant article (which is EASILY long enough).
     """
+    print("Requested summary of '{}'.".format(topic))
     if topic=="recursion":
         return "See \"recursion\"."
     try:
@@ -269,15 +283,19 @@ def nearhere(orig_text, data):
 
 
 def is_special(text):
-    return basic_match(
-        text,
-        ["open the pod bay doors"])
+    """Test if our text is a 'special-case'."""
+    text = text.lower().strip()
+    for test, response in SPECIAL_CASES:
+        if test in text:
+            return True, response
+    return False, ""
+    
 
 def special(orig, info):
-    if "open the pod bay doors" in orig.lower().strip():
-        return "I'm sorry Dave. I'm afraid I can't do that."
-    return ""
+    """The is_special returns a response in useful_data."""
+    return info
 
+    
 # `handlers` is the big deal here. It's a list of (function, function) pairs,
 # where the first function tests whether a message falls into a particular
 # category and, if so, the second function handles that message type and 
