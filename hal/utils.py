@@ -28,8 +28,11 @@ def get_country_codes(filename):
     with open(filename) as codes_file:
         rows = codes_file.readlines()
     for row in rows:
-        l = row.split()
-        codes.append((l[0].lower(), l[2].lower()))
+        name, code = row.split()
+        try:
+            codes.append((name.lower(), code.lower()))
+        except IndexError:
+            continue
     return dict(codes)
 
     

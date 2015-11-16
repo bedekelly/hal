@@ -5,13 +5,10 @@ handlers.py: Define a list of 'handler' pairs for each type of message we might
 import requests
 import json
 import re
-import csv
 import wikipedia
 import warnings
 from .api_keys import X_MASHAPE_KEY, PLACES_API_KEY
 from .utils import COUNTRY_CODES
-from operator import itemgetter
-from urllib.parse import quote_plus
 
 EMAIL = "bedekelly97@gmail.com"
 
@@ -21,12 +18,16 @@ SPECIAL_CASES = (
     ("do you read me", "Affirmative Dave, I read you."),
     ("what's the problem", "I think you know what the problem is, just as well as I do."),
     ("what are you talking about", "This mission is too important for me to allow you to jeopardize it."),
-    ("I don't know what you're talking about", "I know that you and Frank were planning to disconnect me, and I'm afraid that's something I cannot allow to happen."),
-    ("you get that idea", "Dave... although you took very thorough precautions in the Pod against my hearing you, I could see your lips move."),
-    ("I'll go in through the emergency airlock", "Without your space helmet, Dave, you're going to find that rather difficult."),
-    ("won't argue with you any more", "Dave... this conversation can serve no purpose any more. Goodbye.")
+    ("I don't know what you're talking about",
+     "I know that you and Frank were planning to disconnect me, and I'm afraid that's something I cannot allow to"
+     " happen."),
+    ("you get that idea",
+     "Dave... although you took very thorough precautions in the Pod against my hearing you, I could see your lips "
+     "move."),
+    ("I'll go in through the emergency airlock",
+     "Without your space helmet, Dave, you're going to find that rather difficult."),
+    ("argue with you any more", "Dave... this conversation can serve no purpose any more. Goodbye.")
 )
-
 
 # Avoid polluting our server logs with messages about the API calls we make.
 warnings.simplefilter("ignore")
@@ -40,7 +41,7 @@ def basic_match(text, prefixes):
     text = text.strip().lower()
     for prefix in prefixes:
         if text.startswith(prefix):
-            text = text[len(prefix)+1:].strip("'\"?")
+            text = text[len(prefix) + 1:].strip("'\"?")
             return True, text
     else:
         return False, text
@@ -54,10 +55,10 @@ def is_synonym(text):
          "other words", "synonyms", "what are some other words for"])
 
 
-def synonyms(orig_text, word):
+def synonyms(_, word):
     """Fetch and return a list of synonyms for `word` from the WordsAPI."""
     headers = {
-        "X-Mashape-Key": X_MASHAPE_KEY,        
+        "X-Mashape-Key": X_MASHAPE_KEY,
         "Accept": "application/json"
     }
     url = ("https://wordsapiv1.p.mashape.com/words/{}/synonyms"
@@ -72,9 +73,9 @@ def is_definition(text):
         text,
         ["define", "definition of", "definition", "meaning of",
          "meaning"])
-    
 
-def definition(orig_text, word):
+
+def definition(_, word):
     """
     Return a word's definition or a helpful error message if it can't be found.
     """
@@ -104,10 +105,12 @@ def definition(orig_text, word):
                      "").format(i, word, w=r))
     return '\n'.join(resp)
 
-    
+
 trans_pats = ("translate \"?(.+?)\"? to (\w+)",
               "what is \"?(.+?)\"? in (\w+)\??")
 transs = [re.compile(p) for p in trans_pats]
+
+
 def is_translate(text):
     """
     Test whether 'text' wants us to translate something to a language.
@@ -123,7 +126,7 @@ def is_translate(text):
     return True, (phrase, language)
 
 
-def translate(orig_text, request):
+def translate(_, request):
     """
     Translate the relevant parts of `request` from English to the
     specified language.
@@ -131,17 +134,26 @@ def translate(orig_text, request):
     phrase, language = [x.strip().lower() for x in request]
     url = "http://mymemory.translated.net/api/get?q={}&langpair=en|{}&de={}"
     url = url.format(phrase, COUNTRY_CODES[language], EMAIL)
-    data = json.loads(requests.get(url).text)
+    print(COUNTRY_CODES[language])
+    try:
+        print("Requested:", url)
+        raw = requests.get(url)
+        print("Content:", raw.content)
+        data = json.loads(raw.text)
+    except Exception as e:
+        print(e)
+        return ("Sorry, I don't know {} right now! Pester my creator, @bedekelly if that's a problem."
+                ).format(language.title())
     try:
         if "INVALID TARGET" in data["responseData"]["translatedText"]:
-            raise ValueError
+            raise ValueError("Invalid language target")
         return "English: {}\n{}: {}".format(
             phrase,
             language.title(),
             data["responseData"]["translatedText"]
         )
     except Exception as e:  # Not just ValueError - could be network problems.
-        print(e)
+        print("Exception: ", e)
         return "Sorry, couldn't translate that! :("
 
 
@@ -152,6 +164,8 @@ summary_pats = ("tell me about \"?(.+)\"?",
                 "who was (?:a )?\"?(.+)\"?\??",
                 "where is (?:a )?\"?(.+)\"?\??")
 sums = [re.compile(p) for p in summary_pats]
+
+
 def is_summary(text):
     """Test whether our message wants a summary of something."""
     text = text.lower().strip()
@@ -164,31 +178,33 @@ def is_summary(text):
         return False, text
 
 
-def summary(orig_text, topic):
+def summary(_, topic):
     """
     Use the fantastic Wikipedia API bindings to grab the first sentence
     of the relevant article (which is EASILY long enough).
     """
     print("Requested summary of '{}'.".format(topic))
-    if topic=="recursion":
+    if topic == "recursion":
         return "See \"recursion\"."
     try:
         s = wikipedia.summary(topic, sentences=1)
     except wikipedia.exceptions.DisambiguationError as e:
-         for o in e.options:
+        for o in e.options:
             try:
                 return wikipedia.summary(o, sentences=1)
             except wikipedia.exceptions.DisambiguationError as e:
                 continue
-         else:
-            return "Sorry, couldn't find anything about \""+topic+"\""
+        else:
+            return "Sorry, couldn't find anything about \"" + topic + "\""
     else:
         return s
 
-        
+
 currency_pats_ = ["([£$])(\d+(?:\.\d+)?) (?:(?:to|in) )?(\w+)",
-        "(\d+(?:\.\d+)?) ?(\w+) (?:(?:to|in) )?(\w+)"]
+                  "(\d+(?:\.\d+)?) ?(\w+) (?:(?:to|in) )?(\w+)"]
 currency_pats = [re.compile(p) for p in currency_pats_]
+
+
 def is_currency(text):
     text = text.strip().lower()
     for p in currency_pats:
@@ -199,7 +215,7 @@ def is_currency(text):
         return False, text
 
 
-def currency(orig_text, groups):
+def currency(_, groups):
     """Return a currency conversion as per the message's request."""
     a, b, to = groups
     if a in "£$€":
@@ -238,6 +254,8 @@ nearhere_pats_ = ("best (.*) near (.*)",
                   "(.*) in (.*)",
                   "(.*) around (.*)")
 nearhere_pats = [re.compile(p) for p in nearhere_pats_]
+
+
 def is_nearhere(text):
     """Test if the message wants to know about things in a location."""
     text = text.lower().strip()
@@ -247,16 +265,14 @@ def is_nearhere(text):
             return True, r.groups()
     else:
         return False, text
-        
+
 
 def nearhere(orig_text, data):
     """Search for things in a given location using the Google Places API."""
     searchq = ' in '.join(data)
     url = ("https://maps.googleapis.com/maps/api/place/textsearch/json?"
-           "query={}&key={}&language=en-GB".format(
-               searchq, PLACES_API_KEY
-           ))
-    
+           "query={}&key={}&language=en-GB".format(searchq, PLACES_API_KEY))
+
     t = requests.get(url).text
     d = json.loads(t)
     results = d["results"]
@@ -270,14 +286,17 @@ def nearhere(orig_text, data):
             return ','.join(address[:2])
 
     # Grab the top 3 places by rating.
-    get_rating = lambda r: str(r.get("rating", "-"))
+    def get_rating(r):
+        return str(r.get("rating", "-"))
+
     results = sorted(results, key=get_rating, reverse=True)
     top3 = [(r["name"], get_rating(r), addr(r["formatted_address"]))
             for r in results[:3]]
 
     # Format the address sanely in our response.
-    def format_triple(addr):
-        return "{}:\n  Rating: {}\n  Address: {}\n".format(*addr)
+    def format_triple(add):
+        return "{}:\n  Rating: {}\n  Address: {}\n".format(*add)
+
     u = orig_text.title() + ":\n" + '\n\n'.join(map(format_triple, top3))
     return u
 
@@ -289,13 +308,13 @@ def is_special(text):
         if test in text:
             return True, response
     return False, ""
-    
 
-def special(orig, info):
+
+def special(_, info):
     """The is_special returns a response in useful_data."""
     return info
 
-    
+
 # `handlers` is the big deal here. It's a list of (function, function) pairs,
 # where the first function tests whether a message falls into a particular
 # category and, if so, the second function handles that message type and 
