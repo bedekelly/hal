@@ -225,7 +225,7 @@ def currency(_, groups):
         from_, amount = b, a
     from_ = from_.upper()
     to = to.upper()
-    url = "http://google.com/finance/converter?a={}&from={}&to={}"
+    url = "https://google.com/finance/converter?a={}&from={}&to={}"
     url = url.format(amount, from_, to)
     data = requests.get(url).text
     # Yeah, I'm using regex to parse HTML. And what?
